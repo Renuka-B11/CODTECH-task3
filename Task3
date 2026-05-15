@@ -1,0 +1,58 @@
+#CODTECH TASK3#
+/.This project uses Python Dash, Pandas, and Plotly to create an interactive student performance dashboard.The dashboard analyzes student marks and displays insights using bar charts and pie charts.
+It helps visualize average marks, subject-wise performance, and overall student statistics./
+
+
+import pandas as pd
+import dash
+from dash import dcc, html
+import plotly.express as px
+from pyngrok import ngrok
+import threading
+df = pd.read_csv('student_data.csv')
+df['Average'] = df[['Maths', 'Science', 'English']].mean(axis=1)
+app = dash.Dash(__name__)
+bar_chart = px.bar(
+    df,
+    x='Name',
+    y='Average',
+    color='Average',
+    title='Average Marks of Students'
+)
+subject_totals = {
+    'Maths': df['Maths'].mean(),
+    'Science': df['Science'].mean(),
+    'English': df['English'].mean()
+}
+
+pie_chart = px.pie(
+    names=list(subject_totals.keys()),
+    values=list(subject_totals.values()),
+    title='Subject Wise Average Performance'
+)
+
+app.layout = html.Div([
+
+    html.H1(
+        'Student Performance Dashboard',
+        style={'textAlign': 'center'}
+    ),
+
+    html.H2(f'Total Students: {len(df)}'),
+
+    html.H2(f'Highest Average Marks: {df['Average'].max():.2f}'),
+
+    dcc.Graph(figure=bar_chart),
+
+    dcc.Graph(figure=pie_chart)
+
+])
+def run():
+    app.run(port=8050)
+
+thread = threading.Thread(target=run)
+thread.start()
+public_url = ngrok.connect(8050)
+
+print("Dashboard Link:")
+print(public_url)
